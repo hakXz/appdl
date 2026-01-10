@@ -9,7 +9,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("App")
-        self.geometry("500x420")
+        self.geometry("500x450")
         self.resizable(False, False)
 
         self.url_var = tk.StringVar()
@@ -26,7 +26,7 @@ class App(tk.Tk):
     def build_ui(self):
         padding = {"padx": 10, "pady": 5}
 
-        tk.Label(self, text="YouTube URL").pack(anchor="w", **padding)
+        tk.Label(self, text="Video URL (YouTube / Twitter)").pack(anchor="w", **padding)
         tk.Entry(self, textvariable=self.url_var, width=60).pack(**padding)
 
         tk.Button(self, text="Fetch Formats", command=self.fetch_formats).pack(**padding)
@@ -39,20 +39,21 @@ class App(tk.Tk):
             state="readonly"
         ).pack(**padding)
 
-        tk.Label(self, text="Resolution (MP4)").pack(anchor="w", **padding)
+        self.res_label = tk.Label(self, text="Resolution (YouTube)")
+        self.res_label.pack(anchor="w", **padding)
         self.resolution_box = ttk.Combobox(self, textvariable=self.resolution_var, state="readonly")
         self.resolution_box.pack(**padding)
 
-        tk.Label(self, text="FPS").pack(anchor="w", **padding)
+        self.fps_label = tk.Label(self, text="FPS")
+        self.fps_label.pack(anchor="w", **padding)
         self.fps_box = ttk.Combobox(self, textvariable=self.fps_var, state="readonly")
         self.fps_box.pack(**padding)
 
         tk.Label(self, text="Download Location").pack(anchor="w", **padding)
-        tk.Entry(self, textvariable=self.path_var, width=50).pack(side="left", padx=10)
+        tk.Entry(self, textvariable=self.path_var, width=40).pack(side="left", padx=10)
         tk.Button(self, text="Browse", command=self.select_path).pack(side="left")
 
         tk.Button(self, text="Download", command=self.start_download).pack(pady=15)
-
         tk.Label(self, textvariable=self.status_var).pack(pady=10)
 
     def select_path(self):
@@ -60,10 +61,22 @@ class App(tk.Tk):
         if path:
             self.path_var.set(path)
 
+    def is_x_url(self, url: str) -> bool:
+        return "twitter.com" in url or "x.com" in url
+
     def fetch_formats(self):
         url = self.url_var.get().strip()
         if not url:
             messagebox.showerror("Error", "Invalid URL")
+            return
+
+        # X için format seçimi yok
+        if self.is_x_url(url):
+            self.resolution_box["values"] = []
+            self.fps_box["values"] = []
+            self.resolution_var.set("")
+            self.fps_var.set("")
+            self.status_var.set("X detected (auto quality)")
             return
 
         self.status_var.set("Fetching formats...")
@@ -73,9 +86,6 @@ class App(tk.Tk):
                 ydl_opts = {
                     "quiet": True,
                     "skip_download": True,
-                    "http_headers": {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-                    },
                 }
 
                 with YoutubeDL(ydl_opts) as ydl:
@@ -92,7 +102,6 @@ class App(tk.Tk):
                         fps_map.setdefault(res, set())
                         if f.get("fps"):
                             fps_map[res].add(str(int(f["fps"])))
-
 
                 resolutions = sorted(resolutions, key=lambda x: int(x.replace("p", "")))
                 self.available_formats = fps_map
@@ -129,15 +138,18 @@ class App(tk.Tk):
         try:
             common_opts = {
                 "outtmpl": os.path.join(self.path_var.get(), "%(title)s.%(ext)s"),
-                "retries": 5,
-                "fragment_retries": 5,
-                "http_headers": {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-                },
                 "merge_output_format": "mp4",
             }
 
-            if self.format_var.get() == "MP3":
+            url = self.url_var.get()
+
+            if self.is_x_url(url):
+                ydl_opts = {
+                    **common_opts,
+                    "format": "best",
+                }
+
+            elif self.format_var.get() == "MP3":
                 ydl_opts = {
                     **common_opts,
                     "format": "bestaudio/best",
@@ -147,20 +159,21 @@ class App(tk.Tk):
                         "preferredquality": "192",
                     }],
                 }
+
             else:
                 res = self.resolution_var.get().replace("p", "")
                 ydl_opts = {
                     **common_opts,
-                    "format": f"bestvideo[ext=mp4][vcodec!*=av01][height<={res}]+bestaudio[ext=m4a]",
+                    "format": f"bestvideo[ext=mp4][height<={res}]+bestaudio[ext=m4a]",
                 }
 
             with YoutubeDL(ydl_opts) as ydl:
-                ydl.download([self.url_var.get()])
+                ydl.download([url])
 
             self.status_var.set("Completed")
-        except Exception:
+        except Exception as e:
             self.status_var.set("Error")
-            messagebox.showerror("Error", "Download failed")
+            messagebox.showerror("Error", f"Download failed\n{e}")
 
 
 if __name__ == "__main__":
