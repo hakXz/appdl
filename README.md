@@ -1,7 +1,7 @@
-# App – YouTube Video Downloader
+# App – Video Downloader
 
-Bu proje, Python kullanılarak geliştirilmiş basit ve temiz bir **YouTube video indirme masaüstü uygulamasıdır**.
-Uygulama, grafik arayüz üzerinden YouTube videolarını **MP4 (video)** veya **MP3 (ses)** formatında indirmeyi sağlar.
+Bu proje, Python kullanılarak geliştirilmiş basit ve temiz bir **video indirme masaüstü uygulamasıdır**.
+Uygulama, grafik arayüz üzerinden **YouTube** ve **X (Twitter)** içeriklerini **MP4 (video)** veya **MP3 (ses)** formatında indirmeyi sağlar.
 
 Arayüz Tkinter ile hazırlanmıştır ve indirme işlemleri arka planda çalışarak uygulamanın donmasını engeller.
 
@@ -9,10 +9,11 @@ Arayüz Tkinter ile hazırlanmıştır ve indirme işlemleri arka planda çalı�
 
 ## Özellikler
 
-* YouTube video URL girişi
+* YouTube ve X (Twitter) URL girişi
 * MP4 (video) ve MP3 (ses) format seçimi
-* MP4 için çözünürlük seçimi (360p, 720p, 1080p vb. – mevcut olanlar)
-* FPS bilgisi görüntüleme
+* YouTube için çözünürlük seçimi (360p, 720p, 1080p vb. – mevcut olanlar)
+* FPS bilgisi görüntüleme (YouTube)
+* X (Twitter) için otomatik kalite seçimi
 * İndirme konumu seçme
 * Arka planda indirme (UI donmaz)
 * Durum göstergesi
@@ -28,7 +29,7 @@ Arayüz Tkinter ile hazırlanmıştır ve indirme işlemleri arka planda çalı�
 
 * Python 3
 * Tkinter (GUI)
-* yt-dlp (YouTube indirme altyapısı)
+* yt-dlp (YouTube & X indirme altyapısı)
 * FFmpeg (video ve ses birleştirme / MP3 dönüştürme)
 
 ---
@@ -66,21 +67,15 @@ Bu uygulama, video ve ses akışlarını birleştirmek ve MP3 dönüştürme yap
 
 Windows kullanıcıları için **otomatik kurulum scripti** projeye eklenmiştir.
 
-1. Proje klasörü içinde bulunan
-   **`install_ffmpeg.bat`** dosyasına çift tıklayın
-2. Script:
+1. Proje klasörü içindeki **`install_ffmpeg.bat`** dosyasına çift tıklayın
+2. FFmpeg otomatik olarak indirilir ve PATH’e eklenir
+3. Kurulumdan sonra **bilgisayarı yeniden başlatın**
 
-   * FFmpeg’i resmi kaynaktan indirir
-   * `C:\ffmpeg\` dizinine kurar
-   * `C:\ffmpeg\bin` yolunu otomatik olarak **PATH** ortam değişkenine ekler
-3. Kurulum tamamlandıktan sonra **bilgisayarı yeniden başlatın**
-4. Kontrol için Komut İstemi (CMD) açın:
+Kontrol:
 
 ```bash
 ffmpeg -version
 ```
-
-Bilgi geliyorsa kurulum başarılıdır.
 
 ---
 
@@ -94,8 +89,8 @@ python app.py
 
 ## Kullanım
 
-1. YouTube video linkini girin
-2. **Fetch Formats** ile mevcut çözünürlükleri alın
+1. YouTube veya X (Twitter) linkini girin
+2. YouTube için **Fetch Formats** ile çözünürlükleri alın
 3. MP4 veya MP3 formatını seçin
 4. İndirme klasörünü belirleyin
 5. **Download** butonuna basın
@@ -106,10 +101,11 @@ python app.py
 
 ## Notlar
 
-* YouTube videolarının büyük çoğunluğu video ve ses akışlarını ayrı sunduğu için **FFmpeg gereklidir**
+* YouTube videolarında video ve ses ayrı sunulduğu için **FFmpeg gereklidir**
 * FFmpeg olmadan MP4 dosyaları sessiz olabilir
-* Bazı videolarda belirli çözünürlük veya FPS seçenekleri bulunmayabilir
-* YouTube zaman zaman 403 hatası verebilir, bu durumda `yt-dlp` güncellenmelidir:
+* X (Twitter) içerikleri otomatik en iyi kaliteyle indirilir
+* Bazı videolarda çözünürlük veya FPS seçenekleri bulunmayabilir
+* 403 hatalarında `yt-dlp` güncellenmelidir:
 
 ```bash
 pip install -U yt-dlp
@@ -120,4 +116,4 @@ pip install -U yt-dlp
 ## Lisans
 
 Bu proje eğitim ve kişisel kullanım amaçlıdır.
-YouTube’un kullanım koşulları kullanıcı sorumluluğundadır.
+YouTube ve X platformlarının kullanım koşulları kullanıcı sorumluluğundadır.
