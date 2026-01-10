@@ -47,7 +47,7 @@ Arayüz Tkinter ile hazırlanmıştır ve indirme işlemleri arka planda çalı�
 
 ```bash
 git clone https://github.com/hakXz/appdl.git
-cd app-youtube-downloader
+cd appdl-main
 ```
 
 ---
