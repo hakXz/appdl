@@ -70,7 +70,6 @@ class App(tk.Tk):
             messagebox.showerror("Error", "Invalid URL")
             return
 
-        # X için format seçimi yok
         if self.is_x_url(url):
             self.resolution_box["values"] = []
             self.fps_box["values"] = []
@@ -83,15 +82,11 @@ class App(tk.Tk):
 
         def task():
             try:
-                ydl_opts = {
-                    "quiet": True,
-                    "skip_download": True,
-                }
-
+                ydl_opts = {"quiet": True, "skip_download": True}
                 with YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
-                    formats = info.get("formats", [])
 
+                formats = info.get("formats", [])
                 resolutions = set()
                 fps_map = {}
 
@@ -124,10 +119,7 @@ class App(tk.Tk):
         self.fps_var.set(fps_list[0] if fps_list else "")
 
     def start_download(self):
-        url = self.url_var.get().strip()
-        path = self.path_var.get().strip()
-
-        if not url or not path:
+        if not self.url_var.get() or not self.path_var.get():
             messagebox.showerror("Error", "Missing URL or download path")
             return
 
@@ -136,18 +128,28 @@ class App(tk.Tk):
 
     def download(self):
         try:
+            url = self.url_var.get()
             common_opts = {
                 "outtmpl": os.path.join(self.path_var.get(), "%(title)s.%(ext)s"),
-                "merge_output_format": "mp4",
             }
 
-            url = self.url_var.get()
-
             if self.is_x_url(url):
-                ydl_opts = {
-                    **common_opts,
-                    "format": "best",
-                }
+                if self.format_var.get() == "MP3":
+                    ydl_opts = {
+                        **common_opts,
+                        "format": "bestaudio/best",
+                        "postprocessors": [{
+                            "key": "FFmpegExtractAudio",
+                            "preferredcodec": "mp3",
+                            "preferredquality": "192",
+                        }],
+                    }
+                else:
+                    ydl_opts = {
+                        **common_opts,
+                        "format": "best",
+                        "merge_output_format": "mp4",
+                    }
 
             elif self.format_var.get() == "MP3":
                 ydl_opts = {
@@ -165,17 +167,18 @@ class App(tk.Tk):
                 ydl_opts = {
                     **common_opts,
                     "format": f"bestvideo[ext=mp4][height<={res}]+bestaudio[ext=m4a]",
+                    "merge_output_format": "mp4",
                 }
 
             with YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
             self.status_var.set("Completed")
+
         except Exception as e:
             self.status_var.set("Error")
             messagebox.showerror("Error", f"Download failed\n{e}")
 
 
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    App().mainloop()
