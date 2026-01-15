@@ -26,7 +26,7 @@ class App(tk.Tk):
     def build_ui(self):
         padding = {"padx": 10, "pady": 5}
 
-        tk.Label(self, text="Video URL (YouTube / Twitter)").pack(anchor="w", **padding)
+        tk.Label(self, text="Video URL (YouTube / X / Instagram)").pack(anchor="w", **padding)
         tk.Entry(self, textvariable=self.url_var, width=60).pack(**padding)
 
         tk.Button(self, text="Fetch Formats", command=self.fetch_formats).pack(**padding)
@@ -64,18 +64,21 @@ class App(tk.Tk):
     def is_x_url(self, url: str) -> bool:
         return "twitter.com" in url or "x.com" in url
 
+    def is_instagram_url(self, url: str) -> bool:
+        return "instagram.com" in url
+
     def fetch_formats(self):
         url = self.url_var.get().strip()
         if not url:
             messagebox.showerror("Error", "Invalid URL")
             return
 
-        if self.is_x_url(url):
+        if self.is_x_url(url) or self.is_instagram_url(url):
             self.resolution_box["values"] = []
             self.fps_box["values"] = []
             self.resolution_var.set("")
             self.fps_var.set("")
-            self.status_var.set("X detected (auto quality)")
+            self.status_var.set("Auto quality source detected")
             return
 
         self.status_var.set("Fetching formats...")
@@ -131,9 +134,10 @@ class App(tk.Tk):
             url = self.url_var.get()
             common_opts = {
                 "outtmpl": os.path.join(self.path_var.get(), "%(title)s.%(ext)s"),
+                "merge_output_format": "mp4",
             }
 
-            if self.is_x_url(url):
+            if self.is_x_url(url) or self.is_instagram_url(url):
                 if self.format_var.get() == "MP3":
                     ydl_opts = {
                         **common_opts,
@@ -147,8 +151,7 @@ class App(tk.Tk):
                 else:
                     ydl_opts = {
                         **common_opts,
-                        "format": "best",
-                        "merge_output_format": "mp4",
+                        "format": "bestvideo+bestaudio/best",
                     }
 
             elif self.format_var.get() == "MP3":
@@ -167,7 +170,6 @@ class App(tk.Tk):
                 ydl_opts = {
                     **common_opts,
                     "format": f"bestvideo[ext=mp4][height<={res}]+bestaudio[ext=m4a]",
-                    "merge_output_format": "mp4",
                 }
 
             with YoutubeDL(ydl_opts) as ydl:
